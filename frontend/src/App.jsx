@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "sonner";
-import ProtectedRoute, { PublicOnlyRoute } from "@/components/ProtectedRoute";
+import { PublicOnlyRoute, ProfissionalRoute, PacienteRoute } from "@/components/ProtectedRoute";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import Login from "@/pages/Login";
 import Cadastro from "@/pages/Cadastro";
@@ -9,49 +9,37 @@ import Dashboard from "@/pages/Dashboard";
 import Pacientes from "@/pages/Pacientes";
 import Profissionais from "@/pages/Profissionais";
 import Consultas from "@/pages/Consultas";
+import ProntuarioEletronico from "@/pages/ProntuarioEletronico";
+import Anexos from "@/pages/Anexos";
+import PrescricaoDigital from "@/pages/PrescricaoDigital";
 import IA from "@/pages/IA";
 import Perfil from "@/pages/Perfil";
+import PortalPaciente from "@/pages/PortalPaciente";
 
 export default function App() {
   return (
     <AuthProvider>
-      <Toaster
-        position="top-center"
-        richColors
-        closeButton
-        toastOptions={{
-          style: { fontSize: "14px" },
-        }}
+      <Toaster position="top-center" richColors closeButton
+        toastOptions={{ style: { fontSize: "14px" } }}
       />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
           <Route path="/cadastro" element={<PublicOnlyRoute><Cadastro /></PublicOnlyRoute>} />
 
-          <Route
-            path="/dashboard"
-            element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>}
-          />
-          <Route
-            path="/pacientes"
-            element={<ProtectedRoute><DashboardLayout><Pacientes /></DashboardLayout></ProtectedRoute>}
-          />
-          <Route
-            path="/profissionais"
-            element={<ProtectedRoute><DashboardLayout><Profissionais /></DashboardLayout></ProtectedRoute>}
-          />
-          <Route
-            path="/consultas"
-            element={<ProtectedRoute><DashboardLayout><Consultas /></DashboardLayout></ProtectedRoute>}
-          />
-          <Route
-            path="/ia"
-            element={<ProtectedRoute><DashboardLayout><IA /></DashboardLayout></ProtectedRoute>}
-          />
-          <Route
-            path="/perfil"
-            element={<ProtectedRoute><DashboardLayout><Perfil /></DashboardLayout></ProtectedRoute>}
-          />
+          {/* Rotas para Profissionais */}
+          <Route path="/dashboard" element={<ProfissionalRoute><DashboardLayout><Dashboard /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/pacientes" element={<ProfissionalRoute><DashboardLayout><Pacientes /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/profissionais" element={<ProfissionalRoute><DashboardLayout><Profissionais /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/consultas" element={<ProfissionalRoute><DashboardLayout><Consultas /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/prontuario" element={<ProfissionalRoute><DashboardLayout><ProntuarioEletronico /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/anexos" element={<ProfissionalRoute><DashboardLayout><Anexos /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/prescricoes" element={<ProfissionalRoute><DashboardLayout><PrescricaoDigital /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/ia" element={<ProfissionalRoute><DashboardLayout><IA /></DashboardLayout></ProfissionalRoute>} />
+          <Route path="/perfil" element={<ProfissionalRoute><DashboardLayout><Perfil /></DashboardLayout></ProfissionalRoute>} />
+
+          {/* Rota para Pacientes */}
+          <Route path="/portal" element={<PacienteRoute><DashboardLayout><PortalPaciente /></DashboardLayout></PacienteRoute>} />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

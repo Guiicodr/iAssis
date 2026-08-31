@@ -42,11 +42,11 @@ export function AuthProvider({ children }) {
     return () => subscription?.unsubscribe();
   }, [fetchProfile]);
 
-  const signUp = async ({ email, senha, nome_completo }) => {
+  const signUp = async ({ email, senha, nome_completo, papel }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
-      options: { data: { nome_completo } },
+      options: { data: { nome_completo, papel } },
     });
 
     if (error) {

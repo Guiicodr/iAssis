@@ -92,7 +92,7 @@ begin
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'nome_completo', split_part(new.email, '@', 1)),
-    coalesce(new.raw_user_meta_data ->> 'papel', 'admin')
+    coalesce(new.raw_user_meta_data ->> 'papel', 'profissional')
   );
   return new;
 end;

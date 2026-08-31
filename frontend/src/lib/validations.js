@@ -15,6 +15,9 @@ export const cadastroSchema = z
       .regex(/[A-Z]/, "A senha deve conter ao menos uma letra maiúscula")
       .regex(/[0-9]/, "A senha deve conter ao menos um número"),
     confirmar_senha: z.string(),
+    papel: z.enum(["profissional", "paciente"], {
+      errorMap: () => ({ message: "Selecione seu tipo de perfil" }),
+    }),
   })
   .refine((data) => data.senha === data.confirmar_senha, {
     message: "As senhas não conferem",
@@ -48,6 +51,37 @@ export const consultaSchema = z.object({
     .enum(["Agendada", "Confirmada", "Em Andamento", "Concluída", "Cancelada"])
     .default("Agendada"),
   observacao: z.string().optional(),
+});
+
+export const prontuarioSchema = z.object({
+  paciente_id: z.string().uuid("Selecione um paciente"),
+  subjetivo: z.string().optional(),
+  objetivo: z.string().optional(),
+  avaliacao: z.string().optional(),
+  plano: z.string().optional(),
+});
+
+export const prescricaoSchema = z.object({
+  paciente_id: z.string().uuid("Selecione um paciente"),
+  tipo: z.enum(["receita", "atestado"]).default("receita"),
+  medicamento: z.string().min(3, "Medicamento obrigatório"),
+  posologia: z.string().optional(),
+  data_inicio: z.string().optional(),
+  data_fim: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+export const anexoSchema = z.object({
+  paciente_id: z.string().uuid("Selecione um paciente"),
+  tipo: z.enum(["exame", "laudo", "receita", "atestado", "outro"]),
+  descricao: z.string().optional(),
+});
+
+export const alertaSchema = z.object({
+  paciente_id: z.string().uuid("Selecione um paciente").optional().or(z.literal("")),
+  tipo: z.enum(["exame_pendente", "reavaliacao", "retorno", "observacao"]),
+  mensagem: z.string().min(5, "Mensagem deve ter no mínimo 5 caracteres"),
+  prioridade: z.enum(["baixa", "normal", "alta", "urgente"]).default("normal"),
 });
 
 export const perfilSchema = z.object({

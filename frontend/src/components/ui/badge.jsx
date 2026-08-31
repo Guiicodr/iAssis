@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils";
 
 function Badge({ className, variant = "default", ...props }) {
   const variants = {
-    default: "bg-[#e5e7eb] text-[#374151]",
-    success: "bg-[#d1fae5] text-[#065f46]",
-    warning: "bg-[#fef3c7] text-[#92400e]",
-    danger: "bg-[#fce4ec] text-[#c62828]",
-    info: "bg-[#dbeafe] text-[#1e40af]",
+    default: "bg-muted text-muted-foreground",
+    success: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+    warning: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+    danger: "bg-red-500/10 text-red-400 border border-red-500/20",
+    info: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
   };
   return (
     <span
