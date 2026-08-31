@@ -1,178 +1,179 @@
-import { useState } from "react";
-
-const MOCK_CONSULTAS = [
-    { id: 1, paciente: "Ana Silva", profissional: "Dr. Roberto Alves", data: "07/08/2026", horario: "09:00", tipo: "Retorno", status: "Agendada" },
-    { id: 2, paciente: "Mariana Costa", profissional: "Dra. Patricia Lima", data: "07/08/2026", horario: "10:30", tipo: "Primeira Consulta", status: "Agendada" },
-    { id: 3, paciente: "Carlos Eduardo", profissional: "Dr. Fernando Souza", data: "06/08/2026", horario: "14:00", tipo: "Avaliação", status: "Concluída" },
-];
+import { useState, useEffect, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
+import { consultaSchema } from "@/lib/validations";
+import { formatarDataHora } from "@/lib/formatacao";
+import DataTable from "@/components/DataTable";
+import { Badge } from "@/components/ui/badge";
+import { Modal } from "@/components/ui/modal";
 
 export default function Consultas() {
-    const [consultas, setConsultas] = useState(MOCK_CONSULTAS);
-    const [filtroStatus, setFiltroStatus] = useState("Todas");
-    const [modalAberto, setModalAberto] = useState(false);
+  const [consultas, setConsultas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editando, setEditando] = useState(null);
 
-    const [novaConsulta, setNovaConsulta] = useState({
-        paciente: "",
-        profissional: "",
-        data: "",
-        horario: "",
-        tipo: "Primeira Consulta",
-    });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(consultaSchema),
+  });
 
-    const consultasFiltradas = consultas.filter((c) => {
-        if (filtroStatus === "Todas") return true;
-        return c.status === filtroStatus;
-    });
+  const carregar = useCallback(async () => {
+    const { data } = await supabase
+      .from("consultas")
+      .select("*, paciente:pacientes(nome), profissional:profissionais(nome)")
+      .order("data_hora", { ascending: false });
+    if (data) setConsultas(data);
+    setLoading(false);
+  }, []);
 
-    function handleSalvarConsulta(e) {
-        e.preventDefault();
-        setConsultas([{ id: Date.now(), ...novaConsulta, status: "Agendada" }, ...consultas]);
-        setNovaConsulta({ paciente: "", profissional: "", data: "", horario: "", tipo: "Primeira Consulta" });
-        setModalAberto(false);
+  useEffect(() => { carregar(); }, [carregar]); // eslint-disable-line react-hooks/set-state-in-effect
+
+  function abrirModal(consulta = null) {
+    setEditando(consulta);
+    if (consulta) {
+      reset({
+        paciente_id: consulta.paciente_id,
+        profissional_id: consulta.profissional_id,
+        data_hora: consulta.data_hora?.slice(0, 16) || "",
+        tipo: consulta.tipo,
+        status: consulta.status,
+        observacao: consulta.observacao || "",
+      });
+    } else {
+      reset({ paciente_id: "", profissional_id: "", data_hora: "", tipo: "Primeira Consulta", status: "Agendada", observacao: "" });
     }
+    setModalOpen(true);
+  }
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-100">Agenda de Consultas</h1>
-                    <p className="text-xs text-slate-400 mt-1">Controle de agendamentos e histórico de atendimentos.</p>
-                </div>
+  async function onSubmit(data) {
+    const promise = (async () => {
+      if (editando) {
+        const { error } = await supabase.from("consultas").update(data).eq("id", editando.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("consultas").insert(data);
+        if (error) throw error;
+      }
+      setModalOpen(false);
+      setEditando(null);
+      await carregar();
+    })();
+    toast.promise(promise, { loading: editando ? "Atualizando..." : "Salvando...", success: "Feito!", error: (err) => err.message });
+    try { await promise; } catch { /* empty */ }
+  }
 
-                <button
-                    onClick={() => setModalAberto(true)}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs transition-colors self-start sm:self-auto"
-                >
-                    + Agendar Consulta
-                </button>
-            </div>
+  async function handleExcluir(id) {
+    if (!confirm("Excluir esta consulta?")) return;
+    toast.promise(supabase.from("consultas").delete().eq("id", id), {
+      loading: "Excluindo...",
+      success: () => { carregar(); return "Excluída!"; },
+      error: (err) => err.message,
+    });
+  }
 
-            {/* Filtros em Abas Dark */}
-            <div className="flex gap-2 border-b border-slate-800 pb-3 text-xs">
-                {["Todas", "Agendada", "Concluída", "Cancelada"].map((s) => (
-                    <button
-                        key={s}
-                        onClick={() => setFiltroStatus(s)}
-                        className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${filtroStatus === s
-                                ? "bg-slate-800 text-emerald-400 border border-emerald-500/30"
-                                : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200"
-                            }`}
-                    >
-                        {s}
-                    </button>
-                ))}
-            </div>
+  const statusVariant = (s) =>
+    s === "Concluída" ? "success" : s === "Cancelada" ? "danger" : s === "Agendada" ? "info" : s === "Confirmada" ? "warning" : "default";
 
-            <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-sm">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-950/50 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                        <tr>
-                            <th className="px-6 py-4">Data e Hora</th>
-                            <th className="px-6 py-4">Paciente</th>
-                            <th className="px-6 py-4">Médico / Especialista</th>
-                            <th className="px-6 py-4">Tipo</th>
-                            <th className="px-6 py-4">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800 text-xs">
-                        {consultasFiltradas.map((c) => (
-                            <tr key={c.id} className="hover:bg-slate-800/50 transition-colors">
-                                <td className="px-6 py-4 font-mono font-bold text-emerald-400">
-                                    {c.data} às {c.horario}
-                                </td>
-                                <td className="px-6 py-4 font-medium text-slate-200">{c.paciente}</td>
-                                <td className="px-6 py-4 text-slate-400">{c.profissional}</td>
-                                <td className="px-6 py-4 text-slate-400">{c.tipo}</td>
-                                <td className="px-6 py-4">
-                                    <span
-                                        className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold ${c.status === "Agendada"
-                                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                                : c.status === "Concluída"
-                                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                                    : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                                            }`}
-                                    >
-                                        {c.status}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {modalAberto && (
-                <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
-                        <h2 className="text-base font-bold text-slate-100">Agendar Consulta</h2>
-
-                        <form onSubmit={handleSalvarConsulta} className="space-y-3 text-xs">
-                            <div>
-                                <label className="block font-semibold text-slate-400 mb-1">Paciente</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="Nome do paciente"
-                                    value={novaConsulta.paciente}
-                                    onChange={(e) => setNovaConsulta({ ...novaConsulta, paciente: e.target.value })}
-                                    className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-emerald-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block font-semibold text-slate-400 mb-1">Médico</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="Ex: Dr. Roberto Alves"
-                                    value={novaConsulta.profissional}
-                                    onChange={(e) => setNovaConsulta({ ...novaConsulta, profissional: e.target.value })}
-                                    className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-emerald-500"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-semibold text-slate-400 mb-1">Data</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={novaConsulta.data}
-                                        onChange={(e) => setNovaConsulta({ ...novaConsulta, data: e.target.value })}
-                                        className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-emerald-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-semibold text-slate-400 mb-1">Horário</label>
-                                    <input
-                                        type="time"
-                                        required
-                                        value={novaConsulta.horario}
-                                        onChange={(e) => setNovaConsulta({ ...novaConsulta, horario: e.target.value })}
-                                        className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-emerald-500"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                                <button
-                                    type="button"
-                                    onClick={() => setModalAberto(false)}
-                                    className="px-4 py-2 border border-slate-800 hover:bg-slate-800 rounded text-slate-400 font-medium"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded"
-                                >
-                                    Agendar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+  const columns = [
+    { key: "data_hora", label: "Data/Hora", sortable: true, render: (r) => formatarDataHora(r.data_hora) },
+    { key: "paciente", label: "Paciente", render: (r) => r.paciente?.nome || "—" },
+    { key: "profissional", label: "Profissional", render: (r) => r.profissional?.nome || "—" },
+    { key: "tipo", label: "Tipo", sortable: true },
+    { key: "status", label: "Status", render: (r) => <Badge variant={statusVariant(r.status)}>{r.status}</Badge> },
+    {
+      key: "actions",
+      label: "",
+      render: (r) => (
+        <div className="flex gap-2 justify-end">
+          <button onClick={() => abrirModal(r)} className="text-xs text-[#8ba888] hover:text-[#7a9a78] font-medium">Editar</button>
+          <button onClick={() => handleExcluir(r.id)} className="text-xs text-[#dc2626] hover:text-[#b91c1c] font-medium">Excluir</button>
         </div>
+      ),
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-8 w-48 bg-[#e5e7eb] rounded animate-pulse" />
+        <div className="h-96 bg-white rounded-xl border animate-pulse" />
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-[#1f2937]">Agenda de Consultas</h1>
+        <p className="text-sm text-[#6b7280] mt-1">Controle de agendamentos e histórico de atendimentos</p>
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={consultas}
+        searchable
+        searchField="paciente"
+        searchPlaceholder="Buscar por paciente..."
+        emptyMessage="Nenhuma consulta encontrada."
+        actions={
+          <button onClick={() => abrirModal()} className="px-4 py-2 rounded-lg bg-[#8ba888] hover:bg-[#7a9a78] text-white text-sm font-medium transition-colors">
+            + Agendar Consulta
+          </button>
+        }
+      />
+
+      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setEditando(null); }} title={editando ? "Editar Consulta" : "Nova Consulta"}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">ID do Paciente *</label>
+            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
+            {errors.paciente_id && <p className="text-xs text-[#dc2626] mt-1">{errors.paciente_id.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">ID do Profissional *</label>
+            <input {...register("profissional_id")} placeholder="UUID do profissional" className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
+            {errors.profissional_id && <p className="text-xs text-[#dc2626] mt-1">{errors.profissional_id.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">Data e Hora *</label>
+            <input type="datetime-local" {...register("data_hora")} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
+            {errors.data_hora && <p className="text-xs text-[#dc2626] mt-1">{errors.data_hora.message}</p>}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Tipo</label>
+              <select {...register("tipo")} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]">
+                <option value="Primeira Consulta">Primeira Consulta</option>
+                <option value="Retorno">Retorno</option>
+                <option value="Avaliação">Avaliação</option>
+                <option value="Exame">Exame</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Status</label>
+              <select {...register("status")} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]">
+                <option value="Agendada">Agendada</option>
+                <option value="Confirmada">Confirmada</option>
+                <option value="Em Andamento">Em Andamento</option>
+                <option value="Concluída">Concluída</option>
+                <option value="Cancelada">Cancelada</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#374151] mb-1">Observação</label>
+            <textarea {...register("observacao")} rows={3} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={() => { setModalOpen(false); setEditando(null); }} className="px-4 py-2 border border-[#d1d5db] rounded-lg text-sm text-[#6b7280] hover:bg-[#f3f4f6]">Cancelar</button>
+            <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg bg-[#8ba888] hover:bg-[#7a9a78] text-white text-sm font-medium disabled:opacity-50">
+              {isSubmitting ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
 }

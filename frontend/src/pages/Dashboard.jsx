@@ -1,128 +1,206 @@
-import { useState } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
-
+import { useState, useEffect } from "react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
+import { saudacao, hoje } from "@/lib/formatacao";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 export default function Dashboard() {
-    const [metricas] = useState({
-        pacientesAtivos: 128,
-        consultasHoje: 14,
-        medicosPlantao: 6,
-        agendamentosSemana: 42,
-    });
+  const { profile } = useAuth();
+  const [metricas, setMetricas] = useState(null);
+  const [consultasHoje, setConsultasHoje] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const dadosAtendimentosSemana = [
-        { dia: "Seg", atendimentos: 12 },
-        { dia: "Ter", atendimentos: 19 },
-        { dia: "Qua", atendimentos: 15 },
-        { dia: "Qui", atendimentos: 22 },
-        { dia: "Sex", atendimentos: 18 },
-    ];
+  useEffect(() => {
+    async function load() {
+      try {
+        const { data: met } = await supabase.from("metricas_dashboard").select("*").single();
+        setMetricas(met || null);
+        const { data: cons } = await supabase
+          .from("consultas")
+          .select("*, paciente:pacientes(nome), profissional:profissionais(nome)")
+          .eq("status", "Agendada").order("data_hora", { ascending: true }).limit(8);
+        setConsultasHoje(cons || []);
+        const { data: logsData } = await supabase
+          .from("atividade_logs")
+          .select("*").order("created_at", { ascending: false }).limit(5);
+        setLogs(logsData || []);
+      } catch {
+        // offline
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
-    const proximasConsultas = [
-        { id: 1, paciente: "Ana Silva", medico: "Dr. Roberto Alves", hora: "09:00", status: "Confirmado" },
-        { id: 2, paciente: "Mariana Costa", medico: "Dra. Patricia Lima", hora: "10:30", status: "Em Espera" },
-        { id: 3, paciente: "Carlos Eduardo", medico: "Dr. Fernando Souza", hora: "11:15", status: "Confirmado" },
-        { id: 4, paciente: "Lucas Pereira", medico: "Dr. Roberto Alves", hora: "13:30", status: "Confirmado" },
-    ];
+  useEffect(() => {
+    const channel = supabase
+      .channel("dashboard-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "consultas" }, () => {
+        supabase.from("consultas")
+          .select("*, paciente:pacientes(nome), profissional:profissionais(nome)")
+          .eq("status", "Agendada").order("data_hora", { ascending: true }).limit(8)
+          .then(({ data }) => data && setConsultasHoje(data));
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
 
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-slate-100">Visão Geral</h1>
-                <p className="text-xs text-slate-400 mt-1">Acompanhamento operacional em tempo real da clínica.</p>
-            </div>
+  const atendimentosSemana = [
+    { dia: "Seg", atendimentos: 0 },
+    { dia: "Ter", atendimentos: 0 },
+    { dia: "Qua", atendimentos: 0 },
+    { dia: "Qui", atendimentos: 0 },
+    { dia: "Sex", atendimentos: 0 },
+  ];
 
-            {/* Cards de Métricas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm">
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Pacientes Ativos</p>
-                    <p className="text-3xl font-extrabold text-slate-100 mt-2">{metricas.pacientesAtivos}</p>
-                </div>
-                <div className="bg-slate-900 p-6 rounded-xl border border-emerald-500/20 shadow-sm relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-2 h-full bg-emerald-500" />
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Consultas Hoje</p>
-                    <p className="text-3xl font-extrabold text-emerald-400 mt-2">{metricas.consultasHoje}</p>
-                </div>
-                <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm">
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Médicos de Plantão</p>
-                    <p className="text-3xl font-extrabold text-slate-100 mt-2">{metricas.medicosPlantao}</p>
-                </div>
-                <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm">
-                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Agendamentos (Semana)</p>
-                    <p className="text-3xl font-extrabold text-slate-100 mt-2">{metricas.agendamentosSemana}</p>
-                </div>
-            </div>
-
-            {/* Seção Principal: Gráfico + Tabela lado a lado em telas grandes */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Gráfico de Atendimentos */}
-                <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm lg:col-span-1 flex flex-col justify-between">
-                    <div>
-                        <h2 className="text-sm font-bold text-slate-200">Volume de Atendimentos</h2>
-                        <p className="text-xs text-slate-400 mt-0.5">Demanda diária na semana corrente</p>
-                    </div>
-                    <div className="h-64 w-full mt-4">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={dadosAtendimentosSemana}>
-                                <XAxis dataKey="dia" stroke="#64748b" fontSize={11} tickLine={false} />
-                                <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: "#0f172a",
-                                        borderColor: "#334155",
-                                        color: "#f8fafc",
-                                        borderRadius: "8px",
-                                        fontSize: "12px",
-                                    }}
-                                />
-                                <Bar dataKey="atendimentos" fill="#10b981" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Tabela de Próximos Atendimentos */}
-                <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-sm lg:col-span-2 flex flex-col justify-between">
-                    <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                        <div>
-                            <h2 className="text-sm font-bold text-slate-200">Próximos Atendimentos</h2>
-                            <p className="text-xs text-slate-400 mt-0.5">Fila de espera e consultas confirmadas</p>
-                        </div>
-                        <span className="text-xs text-emerald-400 font-mono">● Atualizado agora</span>
-                    </div>
-
-                    <div className="overflow-x-auto flex-1">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-950/50 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-800">
-                                <tr>
-                                    <th className="px-6 py-3.5">Horário</th>
-                                    <th className="px-6 py-3.5">Paciente</th>
-                                    <th className="px-6 py-3.5">Médico</th>
-                                    <th className="px-6 py-3.5">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800 text-xs">
-                                {proximasConsultas.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-800/50 transition-colors">
-                                        <td className="px-6 py-4 font-mono font-bold text-emerald-400">{item.hora}</td>
-                                        <td className="px-6 py-4 font-medium text-slate-200">{item.paciente}</td>
-                                        <td className="px-6 py-4 text-slate-400">{item.medico}</td>
-                                        <td className="px-6 py-4">
-                                            <span
-                                                className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold ${item.status === "Confirmado"
-                                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                                    }`}
-                                            >
-                                                {item.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1f2937]">
+            {saudacao()}, {profile?.nome_completo?.split(" ")[0] || "usuário"}
+          </h1>
+          <p className="text-sm text-[#6b7280] mt-1 capitalize">{hoje()}</p>
         </div>
-    );
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-white rounded-xl border border-[#e5e7eb] animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="px-5 py-5">
+                <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Pacientes Ativos</p>
+                <p className="text-2xl font-bold text-[#1f2937] mt-1">{metricas?.pacientes_ativos ?? 0}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-l-4 border-l-[#8ba888]">
+              <CardContent className="px-5 py-5">
+                <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Consultas Hoje</p>
+                <p className="text-2xl font-bold text-[#8ba888] mt-1">{metricas?.consultas_hoje ?? 0}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="px-5 py-5">
+                <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Profissionais</p>
+                <p className="text-2xl font-bold text-[#1f2937] mt-1">{metricas?.total_profissionais ?? 0}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="px-5 py-5">
+                <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wider">Presença (30d)</p>
+                <p className="text-2xl font-bold text-[#1f2937] mt-1">{metricas?.taxa_presenca_30d ?? 0}%</p>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <h2 className="text-sm font-semibold text-[#1f2937]">Atendimentos na Semana</h2>
+              </CardHeader>
+              <CardContent>
+                <div className="h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={atendimentosSemana}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <Tooltip
+                        contentStyle={{
+                          background: "#fff",
+                          borderColor: "#e5e7eb",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          color: "#374151",
+                        }}
+                      />
+                      <Bar dataKey="atendimentos" fill="#8ba888" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-[#1f2937]">Sessões de Hoje</h2>
+                  <span className="text-xs text-[#8ba888] font-medium">● Ao vivo</span>
+                </div>
+              </CardHeader>
+              <CardContent className="px-0">
+                {consultasHoje.length === 0 ? (
+                  <p className="text-sm text-[#9ca3af] px-6 py-4">Nenhuma consulta agendada para hoje.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#e5e7eb]">
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase">Horário</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase">Paciente</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase">Profissional</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#e5e7eb]">
+                        {consultasHoje.map((c) => (
+                          <tr key={c.id} className="hover:bg-[#f9fafb] transition-colors">
+                            <td className="px-6 py-3.5 font-medium text-[#374151]">
+                              {new Date(c.data_hora).toLocaleTimeString("pt-BR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                            <td className="px-6 py-3.5 text-[#374151]">{c.paciente?.nome || "—"}</td>
+                            <td className="px-6 py-3.5 text-[#6b7280]">{c.profissional?.nome || "—"}</td>
+                            <td className="px-6 py-3.5">
+                              <Badge variant={c.status === "Concluída" ? "success" : c.status === "Cancelada" ? "danger" : c.status === "Agendada" ? "info" : "default"}>
+                                {c.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {logs.length > 0 && (
+            <Card>
+              <CardHeader>
+                <h2 className="text-sm font-semibold text-[#1f2937]">Atividades Recentes</h2>
+              </CardHeader>
+              <CardContent className="px-0">
+                <div className="divide-y divide-[#e5e7eb]">
+                  {logs.map((log) => (
+                    <div key={log.id} className="px-6 py-3 flex items-center gap-3">
+                      <div className="size-2 rounded-full bg-[#8ba888]" />
+                      <p className="text-sm text-[#374151] flex-1">
+                        <span className="font-medium">{log.acao}</span> — {log.entidade}
+                      </p>
+                      <span className="text-xs text-[#9ca3af]">
+                        {new Date(log.created_at).toLocaleString("pt-BR")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
