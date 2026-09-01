@@ -10,15 +10,15 @@ function Card({ className, ...props }) {
 }
 
 function CardHeader({ className, ...props }) {
-  return <div className={cn("px-6 py-4 border-b border-border", className)} {...props} />;
+  return <div className={cn("px-5 py-3.5 border-b border-border", className)} {...props} />;
 }
 
 function CardContent({ className, ...props }) {
-  return <div className={cn("px-6 py-5", className)} {...props} />;
+  return <div className={cn("px-5 py-4", className)} {...props} />;
 }
 
 function CardFooter({ className, ...props }) {
-  return <div className={cn("px-6 py-3 border-t border-border", className)} {...props} />;
+  return <div className={cn("px-5 py-2.5 border-t border-border", className)} {...props} />;
 }
 
 export { Card, CardHeader, CardContent, CardFooter };

@@ -118,33 +118,33 @@ export default function Consultas() {
         searchPlaceholder="Buscar por paciente..."
         emptyMessage="Nenhuma consulta encontrada."
         actions={
-          <button onClick={() => abrirModal()} className="px-4 py-2 rounded-lg bg-[#8ba888] hover:bg-[#7a9a78] text-white text-sm font-medium transition-colors">
+          <button onClick={() => abrirModal()} className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-colors">
             + Agendar Consulta
           </button>
         }
       />
 
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); setEditando(null); }} title={editando ? "Editar Consulta" : "Nova Consulta"}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">ID do Paciente *</label>
-            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
-            {errors.paciente_id && <p className="text-xs text-[#dc2626] mt-1">{errors.paciente_id.message}</p>}
+            <label className="block text-sm font-medium text-foreground mb-1">ID do Paciente *</label>
+            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
+            {errors.paciente_id && <p className="text-xs text-destructive mt-1">{errors.paciente_id.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">ID do Profissional *</label>
-            <input {...register("profissional_id")} placeholder="UUID do profissional" className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
-            {errors.profissional_id && <p className="text-xs text-[#dc2626] mt-1">{errors.profissional_id.message}</p>}
+            <label className="block text-sm font-medium text-foreground mb-1">ID do Profissional *</label>
+            <input {...register("profissional_id")} placeholder="UUID do profissional" className="w-full px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
+            {errors.profissional_id && <p className="text-xs text-destructive mt-1">{errors.profissional_id.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">Data e Hora *</label>
-            <input type="datetime-local" {...register("data_hora")} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
-            {errors.data_hora && <p className="text-xs text-[#dc2626] mt-1">{errors.data_hora.message}</p>}
+            <label className="block text-sm font-medium text-foreground mb-1">Data e Hora *</label>
+            <input type="datetime-local" {...register("data_hora")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
+            {errors.data_hora && <p className="text-xs text-destructive mt-1">{errors.data_hora.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Tipo</label>
-              <select {...register("tipo")} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]">
+              <label className="block text-sm font-medium text-foreground mb-1">Tipo</label>
+              <select {...register("tipo")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors">
                 <option value="Primeira Consulta">Primeira Consulta</option>
                 <option value="Retorno">Retorno</option>
                 <option value="Avaliação">Avaliação</option>
@@ -152,8 +152,8 @@ export default function Consultas() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Status</label>
-              <select {...register("status")} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]">
+              <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+              <select {...register("status")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors">
                 <option value="Agendada">Agendada</option>
                 <option value="Confirmada">Confirmada</option>
                 <option value="Em Andamento">Em Andamento</option>
@@ -163,12 +163,12 @@ export default function Consultas() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">Observação</label>
-            <textarea {...register("observacao")} rows={3} className="w-full px-3 py-2 rounded-lg border border-[#d1d5db] text-sm focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]" />
+            <label className="block text-sm font-medium text-foreground mb-1">Observação</label>
+            <textarea {...register("observacao")} rows={2} className="w-full px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => { setModalOpen(false); setEditando(null); }} className="px-4 py-2 border border-[#d1d5db] rounded-lg text-sm text-[#6b7280] hover:bg-[#f3f4f6]">Cancelar</button>
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg bg-[#8ba888] hover:bg-[#7a9a78] text-white text-sm font-medium disabled:opacity-50">
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={() => { setModalOpen(false); setEditando(null); }} className="px-4 py-1.5 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors">Cancelar</button>
+            <button type="submit" disabled={isSubmitting} className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium disabled:opacity-50 transition-colors">
               {isSubmitting ? "Salvando..." : "Salvar"}
             </button>
           </div>

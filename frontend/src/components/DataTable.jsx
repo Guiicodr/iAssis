@@ -48,9 +48,9 @@ export default function DataTable({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Search + Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
         {searchable && (
           <input
             type="text"
@@ -60,23 +60,23 @@ export default function DataTable({
               setPage(1);
             }}
             placeholder={searchPlaceholder}
-            className="w-full sm:w-64 px-3 py-2 rounded-lg border border-[#d1d5db] bg-white text-sm text-[#374151] placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#8ba888]/40 focus:border-[#8ba888]"
+            className="w-full sm:w-60 px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           />
         )}
-        {actions && <div className="flex gap-2">{actions}</div>}
+        {actions && <div className="flex gap-2 shrink-0">{actions}</div>}
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-[#e5e7eb]">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm animate-fade-in-up">
           <thead>
-            <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
+            <tr className="bg-muted/50 border-b border-border">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-5 py-3.5 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider",
-                    col.sortable && "cursor-pointer select-none hover:text-[#374151] transition-colors"
+                    "px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                    col.sortable && "cursor-pointer select-none hover:text-foreground transition-colors"
                   )}
                   onClick={() => col.sortable && handleSort(col.key)}
                 >
@@ -94,15 +94,12 @@ export default function DataTable({
                   </span>
                 </th>
               ))}
-              {columns.some((c) => c.key === "actions") || (
-                <th className="px-5 py-3.5 w-20" />
-              )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800 stagger-rows">
+          <tbody className="divide-y divide-border stagger-rows">
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 1} className="px-5 py-12 text-center text-sm text-[#9ca3af]">
+                <td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-muted-foreground">
                   {emptyMessage}
                 </td>
               </tr>
@@ -110,10 +107,10 @@ export default function DataTable({
               paginated.map((row, i) => (
                 <tr
                   key={row.id || i}
-                  className="hover:bg-zinc-800/30 transition-all duration-150 hover:scale-[1.002]"
+                  className="hover:bg-muted/40 transition-colors"
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-5 py-3.5 text-[#374151]">
+                    <td key={col.key} className="px-4 py-2.5 text-foreground">
                       {col.render ? col.render(row) : row[col.key] ?? "—"}
                     </td>
                   ))}
@@ -126,7 +123,7 @@ export default function DataTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-[#6b7280]">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             Página {page} de {totalPages}
           </span>
@@ -134,14 +131,14 @@ export default function DataTable({
             <button
               disabled={page === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1 rounded border border-[#d1d5db] disabled:opacity-40 hover:bg-[#f3f4f6]"
+              className="px-3 py-1 rounded border border-border disabled:opacity-40 hover:bg-muted transition-colors"
             >
               Anterior
             </button>
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1 rounded border border-[#d1d5db] disabled:opacity-40 hover:bg-[#f3f4f6]"
+              className="px-3 py-1 rounded border border-border disabled:opacity-40 hover:bg-muted transition-colors"
             >
               Próximo
             </button>
