@@ -68,7 +68,7 @@ export default function DataTable({
 
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-[#e5e7eb]">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm animate-fade-in-up">
           <thead>
             <tr className="bg-[#f9fafb] border-b border-[#e5e7eb]">
               {columns.map((col) => (
@@ -99,7 +99,7 @@ export default function DataTable({
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#e5e7eb]">
+          <tbody className="divide-y divide-zinc-800 stagger-rows">
             {paginated.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + 1} className="px-5 py-12 text-center text-sm text-[#9ca3af]">
@@ -110,7 +110,7 @@ export default function DataTable({
               paginated.map((row, i) => (
                 <tr
                   key={row.id || i}
-                  className="hover:bg-[#f9fafb] transition-colors"
+                  className="hover:bg-zinc-800/30 transition-all duration-150 hover:scale-[1.002]"
                 >
                   {columns.map((col) => (
                     <td key={col.key} className="px-5 py-3.5 text-[#374151]">
