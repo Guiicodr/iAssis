@@ -169,6 +169,14 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
+### 🔓 Login de teste
+Para acessar a aplicação rapidamente sem precisar fazer cadastro, use as credenciais abaixo:
+
+- Email: `teste@teste.com`
+- Senha: `teste123`
+
+Esse usuário é criado automaticamente ao iniciar o backend caso ainda não exista.
+
 ---
 
 ## 📄 Licença
