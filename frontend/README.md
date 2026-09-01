@@ -1,43 +1,43 @@
 # iAssis — Frontend
 
-Aplicação React para gestão clínica inteligente com Supabase.
+React application for intelligent clinical management with Supabase.
 
 ## Scripts
 
 ```bash
-npm run dev       # Servidor de desenvolvimento (Vite)
-npm run build     # Build de produção
+npm run dev       # Development server (Vite)
+npm run build     # Production build
 npm run lint      # ESLint
-npm run preview   # Preview do build de produção
+npm run preview   # Preview production build
 ```
 
-## Dependências principais
+## Main dependencies
 
 - **React 19** + **Vite 8**
 - **Tailwind CSS 4** + **shadcn/ui** (base-ui)
-- **React Router 7** — navegação SPA
-- **React Hook Form 7** + **Zod 4** — formulários com validação
-- **Supabase JS** — auth, banco, realtime, storage
-- **Recharts** — gráficos do dashboard
+- **React Router 7** — SPA navigation
+- **React Hook Form 7** + **Zod 4** — forms with validation
+- **Supabase JS** — auth, database, realtime, storage
+- **Recharts** — dashboard charts
 - **Sonner** — toasts
-- **Lucide React** — ícones
+- **Lucide React** — icons
 
-## Variáveis de ambiente
+## Environment variables
 
-Crie um arquivo `.env` na raiz do frontend:
+Create a file `.env` at the frontend root:
 
 ```env
 VITE_SUPABASE_URL=https://seu-projeto.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
 ```
 
-## Estrutura
+## Structure
 
 ```
 src/
-├── components/     # Componentes reutilizáveis (DataTable, ProtectedRoute, ui/)
+├── components/     # Reusable components (DataTable, ProtectedRoute, ui/)
 ├── contexts/       # AuthContext (sessão, perfil, signUp/signIn/signOut)
 ├── layouts/        # DashboardLayout (sidebar + header)
-├── lib/            # Utilitários (supabaseClient, validations, formatacao)
-└── pages/          # Páginas (Login, Cadastro, Dashboard, CRUD, módulos clínicos)
+├── lib/            # Utilities (supabaseClient, validations, formatacao)
+└── pages/          # Pages (Login, Cadastro, Dashboard, CRUD, módulos clínicos)
 ```

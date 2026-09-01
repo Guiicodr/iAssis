@@ -1,36 +1,38 @@
-# 🩺 iAssis — Gestão Clínica Inteligente
+# 🩺 iAssis — Intelligent Clinical Management
 
-**iAssis** é uma plataforma full-stack para gestão clínica com autenticação por perfil (profissional/paciente), prontuário eletrônico SOAP, prescrição digital, gestão de exames e módulo de IA para triagem.
+**iAssis** is a full-stack platform for clinical management with profile-based authentication (professional/patient), SOAP electronic health records, digital prescriptions, exam management and an AI triage module.
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Features
 
-### 👨‍⚕️ Módulo Profissional
-- **Dashboard** com métricas em tempo real, gráficos e feed de atividades
-- **CRUD completo** de Pacientes, Profissionais e Consultas
-- **Prontuário Eletrônico SOAP** — registro estruturado (Subjetivo, Objetivo, Avaliação, Plano)
-- **Prescrição Digital** — receitas e atestados com medicamentos, posologia e datas
-- **Exames e Anexos** — laudos, exames laboratoriais e documentos por paciente
-- **Módulo de IA** — análise de queixas clínicas para apoio à triagem
+### 👨‍⚕️ Professional Module
+- **Dashboard** with real-time metrics, charts, activity feed, and live appointment updates
+- **Full CRUD** for Patients, Professionals, and Appointments
+- **SOAP Electronic Health Record** — structured notes (Subjective, Objective, Assessment, Plan)
+- **Digital Prescription** — prescriptions and medical certificates with medications, dosage, and dates
+- **Exams & Attachments** — lab results, reports, and documents per patient
+- **AI Module** — clinical complaint analysis for triage support
+- **Smooth Animations** — staggered card entry, hover effects, floating elements, pulse badges
 
-### 🧑‍🤝‍🧑 Portal do Paciente
-- Acompanhamento de consultas agendadas e realizadas
-- Histórico de evoluções (prontuário SOAP)
-- Prescrições ativas
+### 🧑‍🤝‍🧑 Patient Portal
+- Track scheduled and completed appointments
+- Evolution history (SOAP records)
+- Active prescriptions
 
-### 🔐 Autenticação
-- Login e cadastro com validação em tempo real (Zod + React Hook Form)
-- Seletor de perfil: Profissional ou Paciente
-- Rotas protegidas e redirecionamento dinâmico pós-login
-- Sessão segura via Supabase Auth
+### 🔐 Authentication
+- Login and registration with real-time validation (Zod + React Hook Form)
+- Profile selector: Professional or Patient
+- Protected routes with dynamic post-login redirect
+- Secure session via Supabase Auth
+- **Test credentials** are available (see below)
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-| Tecnologia | Versão |
+| Technology | Version |
 |---|---|
 | **React** | 19.x |
 | **Vite** | 8.x |
@@ -42,9 +44,10 @@
 | **Recharts** | 3.x |
 | **Sonner** (toasts) | — |
 | **Supabase JS** | — |
+| **Lucide React** | — |
 
-### Backend (FastAPI — apenas para o módulo de IA)
-| Tecnologia | Versão |
+### Backend (FastAPI — AI module only)
+| Technology | Version |
 |---|---|
 | **Python** | 3.11+ |
 | **FastAPI** | 0.141+ |
@@ -52,43 +55,57 @@
 | **PostgreSQL** | — |
 | **JWT (python-jose)** | — |
 
-### Infraestrutura
-| Serviço | Função |
+### Infrastructure
+| Service | Role |
 |---|---|
-| **Supabase** | Autenticação, banco PostgreSQL, Row Level Security, Realtime |
-| **Vercel** | Deploy do frontend |
+| **Supabase** | Auth, PostgreSQL database, Row Level Security, Realtime |
+| **Vercel** | Frontend deployment |
 
 ---
 
-## 📐 Arquitetura
+## 📐 Architecture
 
 ```
-Usuário → Vercel (React SPA) → Supabase (Auth + DB + RLS + Realtime)
-                               └── FastAPI (opcional, apenas para IA via OpenAI)
+User → Vercel (React SPA) → Supabase (Auth + DB + RLS + Realtime)
+                               └── FastAPI (optional, only for AI via OpenAI)
 ```
 
-O frontend se comunica **diretamente** com o Supabase para:
-- Autenticação (login, cadastro, sessão)
-- CRUD de todas as entidades (pacientes, profissionais, consultas, prontuários, prescrições, anexos)
-- Realtime (atualizações ao vivo no dashboard)
-- Row Level Security (cada usuário vê apenas seus dados)
+The frontend communicates **directly** with Supabase for:
+- Authentication (login, registration, session)
+- CRUD for all entities (patients, professionals, appointments, records, prescriptions, attachments)
+- Realtime (live dashboard updates)
+- Row Level Security (each user sees only their own data)
 
-O backend FastAPI fica disponível exclusivamente para o módulo de IA (análise de sintomas com OpenAI).
+The FastAPI backend is available exclusively for the AI module (symptom analysis with OpenAI).
 
 ---
 
-## 📁 Estrutura do Projeto
+## 🔑 Test Credentials
+
+You can use the following test account to log in without creating a new account:
+
+| Field | Value |
+|---|---|
+| **E-mail** | `teste@teste.com` |
+| **Password** | `teste123` |
+| **Profile** | Professional |
+
+> 💡 Make sure to run the Supabase migrations (including `0002_seed.sql`) first so the database has the required structure and demo data.
+
+---
+
+## 📁 Project Structure
 
 ```
 iassis/
 ├── frontend/                    # React + Vite (SPA)
 │   ├── src/
-│   │   ├── components/          # Componentes reutilizáveis
+│   │   ├── components/          # Reusable components
 │   │   │   └── ui/              # shadcn/ui (button, card, input, badge, modal, label)
-│   │   ├── contexts/            # AuthContext (sessão, perfil, signUp/signIn/signOut)
-│   │   ├── layouts/             # DashboardLayout (sidebar + header dark)
-│   │   ├── lib/                 # Utilitários (supabaseClient, validations Zod, formatadores)
-│   │   └── pages/               # Páginas da aplicação
+│   │   ├── contexts/            # AuthContext (session, profile, signUp/signIn/signOut)
+│   │   ├── layouts/             # DashboardLayout (sidebar + dark header)
+│   │   ├── lib/                 # Utilities (supabaseClient, Zod validations, formatters)
+│   │   └── pages/               # Application pages
 │   │       ├── Login.jsx
 │   │       ├── Cadastro.jsx
 │   │       ├── Dashboard.jsx
@@ -96,75 +113,75 @@ iassis/
 │   │       ├── Profissionais.jsx
 │   │       ├── Consultas.jsx
 │   │       ├── ProntuarioEletronico.jsx   # SOAP
-│   │       ├── PrescricaoDigital.jsx      # Receitas/Atestados
-│   │       ├── Anexos.jsx                 # Exames/Laudos
-│   │       ├── IA.jsx                     # Triagem
+│   │       ├── PrescricaoDigital.jsx      # Prescriptions/Certificates
+│   │       ├── Anexos.jsx                 # Exams/Reports
+│   │       ├── IA.jsx                     # Triage
 │   │       ├── Perfil.jsx
 │   │       └── PortalPaciente.jsx
 │   └── package.json
 │
-├── backend/                     # FastAPI (apenas módulo de IA)
+├── backend/                     # FastAPI (AI module only)
 │   └── app/
 │       ├── main.py
-│       ├── auth/                # JWT + segurança
-│       ├── database/            # Conexão PostgreSQL
+│       ├── auth/                # JWT + Security
+│       ├── database/            # PostgreSQL connection
 │       ├── models/              # SQLAlchemy models
-│       ├── repositories/        # Camada de dados
-│       ├── routers/             # Rotas REST
+│       ├── repositories/        # Data layer
+│       ├── routers/             # REST routes
 │       ├── schemas/             # Pydantic schemas
-│       └── services/            # Lógica de negócio
+│       └── services/            # Business logic
 │
-└── supabase/                    # Migrations SQL
+└── supabase/                    # SQL migrations
     └── migrations/
-        ├── 0001_schema.sql      # Tabelas principais + RLS + trigger profile
-        ├── 0002_seed.sql        # Dados demo
-        └── 0003_modulos_clinicos.sql  # Prontuários, prescrições, anexos, alertas
+        ├── 0001_schema.sql      # Main tables + RLS + profile trigger
+        ├── 0002_seed.sql        # Demo data
+        └── 0003_modulos_clinicos.sql  # SOAP records, prescriptions, attachments, alerts
 ```
 
 ---
 
 ## 🚀 Deploy
 
-### 1. Supabase (banco + auth)
-1. Crie um projeto em [app.supabase.com](https://app.supabase.com)
-2. **SQL Editor** → execute `supabase/migrations/0001_schema.sql`
-3. **SQL Editor** → execute `supabase/migrations/0003_modulos_clinicos.sql`
-4. (Opcional) `0002_seed.sql` para dados demo
-5. Em **Settings → API**, copie `Project URL` e `anon public key`
+### 1. Supabase (database + auth)
+1. Create a project at [app.supabase.com](https://app.supabase.com)
+2. **SQL Editor** → run `supabase/migrations/0001_schema.sql`
+3. **SQL Editor** → run `supabase/migrations/0003_modulos_clinicos.sql`
+4. (Optional) `0002_seed.sql` for demo data
+5. In **Settings → API**, copy `Project URL` and `anon public key`
 
 ### 2. Frontend (Vercel)
-1. Conecte o repositório GitHub na [Vercel](https://vercel.com)
+1. Connect the GitHub repository on [Vercel](https://vercel.com)
 2. Configure:
    - **Root Directory**: `frontend`
    - **Framework Preset**: `Vite`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-3. Adicione as variáveis de ambiente:
-   - `VITE_SUPABASE_URL` → URL do projeto Supabase
-   - `VITE_SUPABASE_ANON_KEY` → chave anônima
-4. **Authentication → URL Configuration** no Supabase:
-   - `Site URL`: URL da Vercel
-   - `Redirect URLs`: URL da Vercel com `/**`
+3. Add environment variables:
+   - `VITE_SUPABASE_URL` → Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` → anon public key
+4. **Authentication → URL Configuration** on Supabase:
+   - `Site URL`: Vercel deployment URL
+   - `Redirect URLs`: Vercel URL with `/**`
 
-### 3. Backend (opcional — apenas para IA)
-- Hospedar em [Render](https://render.com) ou [Railway](https://railway.app)
-- Configurar variáveis de ambiente (`DATABASE_URL`, `OPENAI_API_KEY`, `SECRET_KEY`)
+### 3. Backend (optional — AI only)
+- Host on [Render](https://render.com) or [Railway](https://railway.app)
+- Set environment variables (`DATABASE_URL`, `OPENAI_API_KEY`, `SECRET_KEY`)
 
 ---
 
-## 🧪 Desenvolvimento Local
+## 🧪 Local Development
 
 ```bash
 # Frontend
 cd frontend
 npm install
-cp .env.example .env   # Preencher com credenciais Supabase
+cp .env.example .env   # Fill in Supabase credentials
 npm run dev
 
 # Backend
 cd backend
 python -m venv venv
-source venv/bin/activate  # ou venv\Scripts\activate no Windows
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
@@ -179,6 +196,6 @@ Esse usuário é criado automaticamente ao iniciar o backend caso ainda não exi
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-Projeto privado — todos os direitos reservados.
+Private project — all rights reserved.

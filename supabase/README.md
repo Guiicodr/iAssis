@@ -1,14 +1,14 @@
-# iAssis — Supabase
+# iAssis â€” Supabase
 
 ## Setup
-1. Crie um projeto no [Supabase Dashboard](https://app.supabase.com)
-2. Execute `migrations/0001_schema.sql` no SQL Editor (tabelas, RLS, trigger)
-3. Execute `migrations/0003_modulos_clinicos.sql` no SQL Editor (prontuários, prescrições, anexos, alertas)
-4. (Opcional) Execute `migrations/0002_seed.sql` para dados demo (após criar um usuário)
-5. Cole as chaves (`Project URL` + `anon key`) no `.env` do frontend
+1. Create a project on the [Supabase Dashboard](https://app.supabase.com)
+2. Run `migrations/0001_schema.sql` in the SQL Editor (tables, RLS, trigger)
+3. Run `migrations/0003_modulos_clinicos.sql` in the SQL Editor (SOAP records, prescriptions, attachments, alerts)
+4. (Optional) Run `migrations/0002_seed.sql` for demo data (after creating a user)
+5. Add the keys (`Project URL` + `anon key`) to the frontend's `.env`
 
 ## Storage
-Crie um bucket chamado `avatars` (público) no Supabase Storage para upload de fotos de perfil.
+Create a bucket called `avatars` (public) in Supabase Storage for profile picture uploads.
 
 ## Realtime
-Habilite **Replication** na tabela `consultas` em Database → Replication para atualizações ao vivo no dashboard.
+Enable **Replication** on the `consultas` table in Database â†’ Replication for live dashboard updates.
