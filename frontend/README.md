@@ -1,16 +1,43 @@
-# React + Vite
+# iAssis — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação React para gestão clínica inteligente com Supabase.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm run dev       # Servidor de desenvolvimento (Vite)
+npm run build     # Build de produção
+npm run lint      # ESLint
+npm run preview   # Preview do build de produção
+```
 
-## React Compiler
+## Dependências principais
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **Vite 8**
+- **Tailwind CSS 4** + **shadcn/ui** (base-ui)
+- **React Router 7** — navegação SPA
+- **React Hook Form 7** + **Zod 4** — formulários com validação
+- **Supabase JS** — auth, banco, realtime, storage
+- **Recharts** — gráficos do dashboard
+- **Sonner** — toasts
+- **Lucide React** — ícones
 
-## Expanding the ESLint configuration
+## Variáveis de ambiente
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Crie um arquivo `.env` na raiz do frontend:
+
+```env
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
+```
+
+## Estrutura
+
+```
+src/
+├── components/     # Componentes reutilizáveis (DataTable, ProtectedRoute, ui/)
+├── contexts/       # AuthContext (sessão, perfil, signUp/signIn/signOut)
+├── layouts/        # DashboardLayout (sidebar + header)
+├── lib/            # Utilitários (supabaseClient, validations, formatacao)
+└── pages/          # Páginas (Login, Cadastro, Dashboard, CRUD, módulos clínicos)
+```
