@@ -1,13 +1,10 @@
 import { z } from "zod";
 
 // ─── Login ───────────────────────────────────────────
+// Apenas valida que não está vazio — a complexidade é exigida no cadastro
 export const loginSchema = z.object({
   email: z.string().email("Insira um e-mail válido"),
-  senha: z
-    .string()
-    .min(6, "A senha deve ter no mínimo 6 caracteres")
-    .regex(/[A-Z]/, "A senha deve conter ao menos uma letra maiúscula")
-    .regex(/[0-9]/, "A senha deve conter ao menos um número"),
+  senha: z.string().min(1, "A senha é obrigatória"),
 });
 
 // ─── Cadastro ────────────────────────────────────────
