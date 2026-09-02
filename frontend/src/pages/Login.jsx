@@ -4,20 +4,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { loginSchema, calcPasswordStrength } from "@/lib/validations";
+import { loginSchema } from "@/lib/validations";
 import AmbientBackground from "@/components/AmbientBackground";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Bug } from "lucide-react";
+
+const DEV_MODE = import.meta.env.VITE_DEV_MODE === "true";
+const DEV_EMAIL = import.meta.env.VITE_TEST_EMAIL || "";
+const DEV_PASSWORD = import.meta.env.VITE_TEST_PASSWORD || "";
 
 export default function Login() {
   const { signIn } = useAuth();
   const [showSenha, setShowSenha] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", senha: "" },
   });
-
-  const senha = watch("senha", "");
-  const strength = calcPasswordStrength(senha);
 
   async function onSubmit(data) {
     const promise = signIn({ email: data.email, senha: data.senha });
@@ -32,6 +33,23 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
       <AmbientBackground />
+
+      {/* Dev mode badge — invisível em produção */}
+      {DEV_MODE && DEV_EMAIL && (
+        <button
+          type="button"
+          onClick={() => {
+            setValue("email", DEV_EMAIL, { shouldValidate: true });
+            setValue("senha", DEV_PASSWORD, { shouldValidate: true });
+          }}
+          className="fixed bottom-4 right-4 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-card/80 text-xs text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+          title="Preencher credenciais de desenvolvimento"
+        >
+          <Bug size={12} />
+          Dev
+        </button>
+      )}
+
       <div className="w-full max-w-sm relative z-10">
         {/* Logo */}
         <div className="text-center mb-8 animate-fade-in-up">
@@ -78,23 +96,6 @@ export default function Login() {
               </button>
             </div>
             {errors.senha && <p className="text-xs text-destructive mt-1">{errors.senha.message}</p>}
-
-            {/* Força da senha */}
-            {senha && (
-              <div className="mt-2 space-y-1">
-                <div className="flex gap-1.5">
-                  {[1, 2, 3].map((lvl) => (
-                    <div
-                      key={lvl}
-                      className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${lvl <= strength.level ? strength.color : "bg-muted"}`}
-                    />
-                  ))}
-                </div>
-                <p className={`text-xs font-medium ${strength.level === 1 ? "text-destructive" : strength.level === 2 ? "text-amber-500" : "text-primary"}`}>
-                  {strength.label}
-                </p>
-              </div>
-            )}
 
             {/* Esqueceu a senha */}
             <div className="mt-2 text-right">
