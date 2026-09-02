@@ -15,15 +15,6 @@ export default function Login() {
     },
   });
 
-  function preencherLoginTeste() {
-    setValue("email", "teste@teste.com", { shouldValidate: true, shouldDirty: true });
-    setValue("senha", "teste123", { shouldValidate: true, shouldDirty: true });
-    toast("Credenciais de teste preenchidas", {
-      description: "E-mail: teste@teste.com | Senha: teste123",
-      duration: 3000,
-    });
-  }
-
   async function onSubmit(data) {
     const promise = signIn({ email: data.email, senha: data.senha });
     toast.promise(promise, {
@@ -39,15 +30,7 @@ export default function Login() {
       <div className={"absolute top-20 left-10 size-24 rounded-full bg-emerald-500/5 blur-3xl animate-float"} />
       <div className={"absolute bottom-20 right-10 size-32 rounded-full bg-emerald-500/5 blur-3xl animate-float-delayed"} />
       <div className={"absolute top-1/3 right-1/4 size-16 rounded-full bg-blue-500/5 blur-3xl animate-float"} style={{ animationDelay: "0.8s" }} />
-      <button
-        type="button"
-        onClick={preencherLoginTeste}
-        title="Usar login de teste"
-        className="absolute right-4 top-4 z-20 flex items-center justify-center size-9 rounded-full border border-zinc-700 bg-zinc-900/80 text-zinc-400 shadow-lg shadow-zinc-950/40 transition hover:border-emerald-500 hover:text-emerald-300 hover:bg-zinc-800"
-        aria-label="Preencher login de teste"
-      >
-        🧪
-      </button>
+      
       <div className={"w-full max-w-sm relative z-10"}>
         <div className={"text-center mb-8 animate-fade-in-up"}>
           <div className={"inline-flex items-center justify-center size-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-2xl font-bold mb-3 shadow-lg animate-glow"}>IA</div>

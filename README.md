@@ -20,13 +20,6 @@
 - Evolution history (SOAP records)
 - Active prescriptions
 
-### 🔐 Authentication
-- Login and registration with real-time validation (Zod + React Hook Form)
-- Profile selector: Professional or Patient
-- Protected routes with dynamic post-login redirect
-- Secure session via Supabase Auth
-- **Test credentials** are available (see below)
-
 ---
 
 ## 🛠️ Tech Stack
@@ -77,20 +70,6 @@ The frontend communicates **directly** with Supabase for:
 - Row Level Security (each user sees only their own data)
 
 The FastAPI backend is available exclusively for the AI module (symptom analysis with OpenAI).
-
----
-
-## 🔑 Test Credentials
-
-You can use the following test account to log in without creating a new account:
-
-| Field | Value |
-|---|---|
-| **E-mail** | `teste@teste.com` |
-| **Password** | `teste123` |
-| **Profile** | Professional |
-
-> 💡 Make sure to run the Supabase migrations (including `0002_seed.sql`) first so the database has the required structure and demo data.
 
 ---
 
@@ -186,13 +165,6 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-### 🔓 Login de teste
-Para acessar a aplicação rapidamente sem precisar fazer cadastro, use as credenciais abaixo:
-
-- Email: `teste@teste.com`
-- Senha: `teste123`
-
-Esse usuário é criado automaticamente ao iniciar o backend caso ainda não exista.
 
 ---
 

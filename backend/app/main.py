@@ -5,11 +5,10 @@ from app.routers import profissionais
 from app.routers import consultas
 from app.routers import ia
 from app.routers import auth
-from app.database.init_db import criar_usuario_teste
-
 from fastapi.openapi.utils import get_openapi
 
-criar_usuario_teste()
+# NOTA: Usuário de teste removido da inicialização automática.
+# Use o script init_db.py manualmente ou crie via interface de cadastro.
 
 app = FastAPI(
     title="IAssis API",

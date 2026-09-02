@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.auth.dependencies import get_current_user
 from app.schemas.ia_schema import (
     ResumoRequest,
     ResumoResponse
@@ -16,10 +17,13 @@ router = APIRouter(
     "/resumo",
     response_model=ResumoResponse
 )
-def gerar_resumo(request: ResumoRequest):
+def gerar_resumo(
+    request: ResumoRequest,
+    usuario=Depends(get_current_user)
+):
 
     resumo = ia_service.gerar_resumo(
-        request.texto
+        request.texto[:20000]  # Limita a 20k caracteres
     )
 
     return {

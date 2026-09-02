@@ -1,13 +1,7 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+from app.auth.auth import validar_token_supabase, validar_token_local
 
 security = HTTPBearer()
 
@@ -17,17 +11,18 @@ def get_current_user(
 ):
     token = credentials.credentials
 
-    try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
+    # 1. Tenta validar como token do Supabase (RS256 via JWKS)
+    payload = validar_token_supabase(token)
+    if payload:
         return payload
 
-    except JWTError:
-        raise HTTPException(
-            status_code=401,
-            detail="Token inválido"
-        )
+    # 2. Fallback: tenta validar como token local (HS256)
+    payload = validar_token_local(token)
+    if payload:
+        return payload
+
+    # 3. Nenhum válido
+    raise HTTPException(
+        status_code=401,
+        detail="Token inválido ou expirado"
+    )
