@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { prontuarioSchema } from "@/lib/validations";
 import { formatarDataHora } from "@/lib/formatacao";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
@@ -15,6 +16,7 @@ export default function ProntuarioEletronico() {
   const [prontuarios, setProntuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loadingPront, setLoadingPront] = useState(false);
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm({
     resolver: zodResolver(prontuarioSchema),
@@ -29,14 +31,14 @@ export default function ProntuarioEletronico() {
 
   function selecionarPaciente(paciente) {
     setPacienteSelecionado(paciente);
-    setModalOpen(true);
+    setLoadingPront(true);
     reset({ paciente_id: paciente.id, subjetivo: "", objetivo: "", avaliacao: "", plano: "" });
     supabase
       .from("prontuarios")
       .select("*")
       .eq("paciente_id", paciente.id)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setProntuarios(data || []));
+      .then(({ data }) => { setProntuarios(data || []); setLoadingPront(false); });
   }
 
   async function onSubmit(data) {
@@ -58,25 +60,30 @@ export default function ProntuarioEletronico() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Prontuário Eletrônico</h1>
-        <p className="text-sm text-zinc-400 mt-1">Registro SOAP — Subjetivo, Objetivo, Avaliação e Plano</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-5">
+      <PageHeader
+        title="Prontuário Eletrônico"
+        subtitle="Registro SOAP — Subjetivo, Objetivo, Avaliação e Plano"
+      />
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <Card className="lg:col-span-1">
-          <CardHeader><h2 className="text-sm font-semibold text-zinc-100">Pacientes</h2></CardHeader>
+          <CardHeader className="py-3.5 px-5">
+            <h2 className="text-sm font-semibold text-foreground">Pacientes</h2>
+          </CardHeader>
           <CardContent className="p-0">
             {loading ? (
-              <div className="p-4 space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 bg-zinc-800 rounded animate-pulse" />)}</div>
+              <div className="p-4 space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 bg-muted rounded animate-pulse" />)}</div>
             ) : (
-              <div className="divide-y divide-zinc-800">
+              <div className="divide-y divide-border">
                 {pacientes.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => selecionarPaciente(p)}
-                    className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-zinc-800 ${pacienteSelecionado?.id === p.id ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-300"}`}
+                    className={`w-full text-left px-5 py-3 text-sm transition-colors hover:bg-muted/60 ${
+                      pacienteSelecionado?.id === p.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-foreground"
+                    }`}
                   >
                     {p.nome}
                   </button>
@@ -85,40 +92,41 @@ export default function ProntuarioEletronico() {
             )}
           </CardContent>
         </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <h2 className="text-sm font-semibold text-zinc-100">
-              {pacienteSelecionado ? `Evoluções - ${pacienteSelecionado.nome}` : "Selecione um paciente"}
+<Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between py-3.5 px-5">
+            <h2 className="text-sm font-semibold text-foreground">
+              {pacienteSelecionado ? `Evolações - ${pacienteSelecionado.nome}` : "Selecione um paciente"}
             </h2>
+            {pacienteSelecionado && (
+              <button
+                onClick={() => { reset({ paciente_id: pacienteSelecionado.id, subjetivo: "", objetivo: "", avaliacao: "", plano: "" }); setModalOpen(true); }}
+                className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors"
+              >
+                + Novo Registro
+              </button>
+            )}
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-5">
             {!pacienteSelecionado ? (
-              <p className="text-sm text-zinc-500">Selecione um paciente ao lado para ver o histórico de evoluções SOAP.</p>
+              <p className="text-sm text-muted-foreground">Selecione um paciente ao lado para ver o histórico de evoluções SOAP.</p>
+            ) : loadingPront ? (
+              <div className="space-y-3">{[1,2].map(i => <div key={i} className="h-24 bg-muted rounded-lg animate-pulse" />)}</div>
             ) : prontuarios.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-sm text-zinc-500 mb-4">Nenhum prontuário registrado.</p>
-                <button onClick={() => { reset({ paciente_id: pacienteSelecionado.id, subjetivo: "", objetivo: "", avaliacao: "", plano: "" }); setModalOpen(true); }} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium">
-                  + Novo Registro SOAP
-                </button>
+                <p className="text-sm text-muted-foreground mb-4">Nenhum prontuário registrado.</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="flex justify-end">
-                  <button onClick={() => { reset({ paciente_id: pacienteSelecionado.id, subjetivo: "", objetivo: "", avaliacao: "", plano: "" }); setModalOpen(true); }} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium">
-                    + Novo Registro
-                  </button>
-                </div>
+              <div className="space-y-3">
                 {prontuarios.map((p) => (
-                  <div key={p.id} className="bg-zinc-800/50 rounded-lg border border-zinc-700 p-4 space-y-3">
-                    <div className="flex items-center justify-between text-xs text-zinc-500">
-                      <span className="font-medium text-zinc-400">{formatarDataHora(p.data)}</span>
-                      <Badge variant="info">SOAP</Badge>
+                  <div key={p.id} className="bg-muted/30 rounded-lg border border-border p-4 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">{formatarDataHora(p.data)}</span>
+                      <Badge variant="sage">SOAP</Badge>
                     </div>
-                    {p.subjetivo && <div><p className="text-xs font-semibold text-zinc-400 uppercase">S — Subjetivo</p><p className="text-sm text-zinc-300 mt-1">{p.subjetivo}</p></div>}
-                    {p.objetivo && <div><p className="text-xs font-semibold text-zinc-400 uppercase">O — Objetivo</p><p className="text-sm text-zinc-300 mt-1">{p.objetivo}</p></div>}
-                    {p.avaliacao && <div><p className="text-xs font-semibold text-zinc-400 uppercase">A — Avaliação</p><p className="text-sm text-zinc-300 mt-1">{p.avaliacao}</p></div>}
-                    {p.plano && <div><p className="text-xs font-semibold text-zinc-400 uppercase">P — Plano</p><p className="text-sm text-zinc-300 mt-1">{p.plano}</p></div>}
+                    {p.subjetivo && <div><p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">S — Subjetivo</p><p className="text-sm text-foreground mt-1">{p.subjetivo}</p></div>}
+                    {p.objetivo && <div><p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">O — Objetivo</p><p className="text-sm text-foreground mt-1">{p.objetivo}</p></div>}
+                    {p.avaliacao && <div><p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">A — Avaliação</p><p className="text-sm text-foreground mt-1">{p.avaliacao}</p></div>}
+                    {p.plano && <div><p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">P — Plano</p><p className="text-sm text-foreground mt-1">{p.plano}</p></div>}
                   </div>
                 ))}
               </div>
@@ -126,28 +134,27 @@ export default function ProntuarioEletronico() {
           </CardContent>
         </Card>
       </div>
-
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Registro SOAP">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Novo Registro SOAP">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">S — Subjetivo</label>
-            <textarea {...register("subjetivo")} rows={3} placeholder="Queixas, sintomas, história..." className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">S — Subjetivo</label>
+            <textarea {...register("subjetivo")} rows={3} placeholder="Queixas, sintomas, história..." className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">O — Objetivo</label>
-            <textarea {...register("objetivo")} rows={3} placeholder="Exame físico, sinais vitais..." className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">O — Objetivo</label>
+            <textarea {...register("objetivo")} rows={3} placeholder="Exame físico, sinais vitais..." className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">A — Avaliação</label>
-            <textarea {...register("avaliacao")} rows={3} placeholder="Hipóteses diagnósticas..." className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">A — Avaliação</label>
+            <textarea {...register("avaliacao")} rows={3} placeholder="Hipóteses diagnósticas..." className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">P — Plano</label>
-            <textarea {...register("plano")} rows={3} placeholder="Conduta, exames, medicações..." className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">P — Plano</label>
+            <textarea {...register("plano")} rows={3} placeholder="Conduta, exames, medicações..." className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:bg-zinc-800">Cancelar</button>
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium disabled:opacity-50">{isSubmitting ? "Salvando..." : "Salvar"}</button>
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-1.5 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors">Cancelar</button>
+            <button type="submit" disabled={isSubmitting} className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-medium disabled:opacity-50 transition-colors">{isSubmitting ? "Salvando..." : "Salvar"}</button>
           </div>
         </form>
       </Modal>

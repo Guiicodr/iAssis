@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { anexoSchema } from "@/lib/validations";
 import { formatarDataHora } from "@/lib/formatacao";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
@@ -40,52 +41,51 @@ export default function Anexos() {
     }
   }
 
-  const tipoIcon = { exame: "🩸", laudo: "📄", receita: "💊", atestado: "📋", outro: "📁" };
+  const tipoIcon = { exame: "\uD83D\uDE38", laudo: "\uD83D\uDCC4", receita: "\uD83D\uDC8A", atestado: "\uD83D\uDCCB", outro: "\uD83D\uDCC1" };
 
-  if (loading) return <div className="space-y-4"><div className="h-8 w-48 bg-zinc-800 rounded animate-pulse" /><div className="h-96 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" /></div>;
+  if (loading) return <div className="space-y-4"><div className="h-8 w-48 bg-muted rounded animate-pulse" /><div className="h-96 bg-card rounded-xl border border-border animate-pulse" /></div>;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Exames e Anexos</h1>
-        <p className="text-sm text-zinc-400 mt-1">Laudos, exames laboratoriais e receitas dos pacientes</p>
-      </div>
-
-      <div className="flex justify-end">
-        <button onClick={() => setModalOpen(true)} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium">+ Novo Anexo</button>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Exames e Anexos"
+        subtitle="Laudos, exames laboratoriais e receitas dos pacientes"
+      >
+        <button onClick={() => setModalOpen(true)} className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors">
+          + Novo Anexo
+        </button>
+      </PageHeader>
 
       {anexos.length === 0 ? (
-        <Card><CardContent className="py-12 text-center"><p className="text-sm text-zinc-500">Nenhum anexo cadastrado.</p></CardContent></Card>
+        <Card><CardContent className="py-10 text-center"><p className="text-sm text-muted-foreground">Nenhum anexo cadastrado.</p></CardContent></Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {anexos.map((a) => (
             <Card key={a.id}>
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl">{tipoIcon[a.tipo] || "📁"}</span>
+                  <span className="text-2xl">{tipoIcon[a.tipo] || "\uD83D\uDCC1"}</span>
                   <Badge variant={a.tipo === "exame" ? "info" : a.tipo === "laudo" ? "warning" : "success"}>{a.tipo}</Badge>
                 </div>
-                <p className="text-sm font-medium text-zinc-200">{a.nome}</p>
-                {a.descricao && <p className="text-xs text-zinc-400">{a.descricao}</p>}
-                <p className="text-xs text-zinc-500">{a.paciente?.nome} — {formatarDataHora(a.created_at)}</p>
+                <p className="text-sm font-medium text-foreground">{a.nome}</p>
+                {a.descricao && <p className="text-xs text-muted-foreground">{a.descricao}</p>}
+                <p className="text-xs text-muted-foreground">{a.paciente?.nome} — {formatarDataHora(a.created_at)}</p>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
-
-      <Modal open={modalOpen} onClose={() => { setModalOpen(false); reset({ paciente_id: "", tipo: "exame", descricao: "" }); }} title="Novo Anexo">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+<Modal open={modalOpen} onClose={() => { setModalOpen(false); reset({ paciente_id: "", tipo: "exame", descricao: "" }); }} title="Novo Anexo">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">ID do Paciente *</label>
-            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">ID do Paciente *</label>
+            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
             {errors.paciente_id && <p className="text-xs text-red-400 mt-1">{errors.paciente_id.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Tipo</label>
-              <select {...register("tipo")} className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <label className="block text-sm font-medium text-foreground mb-1">Tipo</label>
+              <select {...register("tipo")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40">
                 <option value="exame">Exame</option>
                 <option value="laudo">Laudo</option>
                 <option value="receita">Receita</option>
@@ -94,13 +94,13 @@ export default function Anexos() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Descrição</label>
-              <input {...register("descricao")} placeholder="Breve descrição" className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+              <label className="block text-sm font-medium text-foreground mb-1">Descrição</label>
+              <input {...register("descricao")} placeholder="Breve descrição" className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => { setModalOpen(false); reset({ paciente_id: "", tipo: "exame", descricao: "" }); }} className="px-4 py-2 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:bg-zinc-800">Cancelar</button>
-            <button type="submit" disabled={uploading} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium disabled:opacity-50">{uploading ? "Salvando..." : "Salvar"}</button>
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={() => { setModalOpen(false); reset({ paciente_id: "", tipo: "exame", descricao: "" }); }} className="px-4 py-1.5 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors">Cancelar</button>
+            <button type="submit" disabled={uploading} className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-medium disabled:opacity-50 transition-colors">{uploading ? "Salvando..." : "Salvar"}</button>
           </div>
         </form>
       </Modal>

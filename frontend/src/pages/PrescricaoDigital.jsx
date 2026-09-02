@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { prescricaoSchema } from "@/lib/validations";
 import { formatarDataISO } from "@/lib/formatacao";
+import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
@@ -73,36 +74,35 @@ export default function PrescricaoDigital() {
     { key: "status", label: "Status", render: (r) => <Badge variant={r.status === "ativa" ? "success" : "default"}>{r.status}</Badge> },
   ];
 
-  if (loading) return <div className="space-y-4"><div className="h-8 w-48 bg-zinc-800 rounded animate-pulse" /><div className="h-96 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" /></div>;
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-100">Prescricao Digital</h1>
-        <p className="text-sm text-zinc-400 mt-1">Criacao e gerenciamento de receitas e atestados medicos</p>
-      </div>
-
-      <div className="flex justify-end">
-        <button onClick={() => abrirModal()} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium">+ Nova Prescricao</button>
-      </div>
+  if (loading) return <div className="space-y-4"><div className="h-8 w-48 bg-muted rounded animate-pulse" /><div className="h-96 bg-card rounded-xl border border-border animate-pulse" /></div>;
+return (
+    <div className="space-y-5">
+      <PageHeader
+        title="Prescrição Digital"
+        subtitle="Criação e gerenciamento de receitas e atestados médicos"
+      >
+        <button onClick={() => abrirModal()} className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors">
+          + Nova Prescrição
+        </button>
+      </PageHeader>
 
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-border">
                   {columns.map((col) => (
-                    <th key={col.key} className="px-5 py-3.5 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">{col.label}</th>
+                    <th key={col.key} className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{col.label}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-border">
                 {prescricoes.length === 0 ? (
-                  <tr><td colSpan={columns.length} className="px-5 py-12 text-center text-sm text-zinc-500">Nenhuma prescricao cadastrada.</td></tr>
+                  <tr><td colSpan={columns.length} className="px-4 py-10 text-center text-sm text-muted-foreground">Nenhuma prescrição cadastrada.</td></tr>
                 ) : prescricoes.map((r) => (
-                  <tr key={r.id} className="hover:bg-zinc-800/50 transition-colors">
-                    {columns.map((col) => (<td key={col.key} className="px-5 py-3.5 text-zinc-300">{col.render ? col.render(r) : r[col.key] ?? "—"}</td>))}
+                  <tr key={r.id} className="hover:bg-muted/50 transition-colors">
+                    {columns.map((col) => (<td key={col.key} className="px-4 py-2.5 text-foreground">{col.render ? col.render(r) : r[col.key] ?? "—"}</td>))}
                   </tr>
                 ))}
               </tbody>
@@ -111,48 +111,48 @@ export default function PrescricaoDigital() {
         </CardContent>
       </Card>
 
-      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setEditando(null); }} title={editando ? "Editar Prescricao" : "Nova Prescricao"}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Modal open={modalOpen} onClose={() => { setModalOpen(false); setEditando(null); }} title={editando ? "Editar Prescrição" : "Nova Prescrição"}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">ID do Paciente *</label>
-            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">ID do Paciente *</label>
+            <input {...register("paciente_id")} placeholder="UUID do paciente" className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
             {errors.paciente_id && <p className="text-xs text-red-400 mt-1">{errors.paciente_id.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Tipo</label>
-              <select {...register("tipo")} className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+              <label className="block text-sm font-medium text-foreground mb-1">Tipo</label>
+              <select {...register("tipo")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40">
                 <option value="receita">Receita</option>
                 <option value="atestado">Atestado</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Medicamento *</label>
-              <input {...register("medicamento")} placeholder="Nome do medicamento" className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+              <label className="block text-sm font-medium text-foreground mb-1">Medicamento *</label>
+              <input {...register("medicamento")} placeholder="Nome do medicamento" className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
               {errors.medicamento && <p className="text-xs text-red-400 mt-1">{errors.medicamento.message}</p>}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Posologia</label>
-            <input {...register("posologia")} placeholder="Ex: 1 comprimido 8/8h por 7 dias" className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">Posologia</label>
+            <input {...register("posologia")} placeholder="Ex: 1 comprimido 8/8h por 7 dias" className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Data inicio</label>
-              <input type="date" {...register("data_inicio")} className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+              <label className="block text-sm font-medium text-foreground mb-1">Data início</label>
+              <input type="date" {...register("data_inicio")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1">Data fim</label>
-              <input type="date" {...register("data_fim")} className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+              <label className="block text-sm font-medium text-foreground mb-1">Data fim</label>
+              <input type="date" {...register("data_fim")} className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1">Observacoes</label>
-            <textarea {...register("observacoes")} rows={3} className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            <label className="block text-sm font-medium text-foreground mb-1">Observações</label>
+            <textarea {...register("observacoes")} rows={3} className="w-full px-3 py-1.5 rounded-lg border border-border bg-muted/50 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => { setModalOpen(false); setEditando(null); }} className="px-4 py-2 border border-zinc-700 rounded-lg text-sm text-zinc-400 hover:bg-zinc-800">Cancelar</button>
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium disabled:opacity-50">{isSubmitting ? "Salvando..." : "Salvar"}</button>
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={() => { setModalOpen(false); setEditando(null); }} className="px-4 py-1.5 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted transition-colors">Cancelar</button>
+            <button type="submit" disabled={isSubmitting} className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-medium disabled:opacity-50 transition-colors">{isSubmitting ? "Salvando..." : "Salvar"}</button>
           </div>
         </form>
       </Modal>
