@@ -1,10 +1,16 @@
 import { z } from "zod";
 
+// ─── Login ───────────────────────────────────────────
 export const loginSchema = z.object({
   email: z.string().email("Insira um e-mail válido"),
-  senha: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  senha: z
+    .string()
+    .min(6, "A senha deve ter no mínimo 6 caracteres")
+    .regex(/[A-Z]/, "A senha deve conter ao menos uma letra maiúscula")
+    .regex(/[0-9]/, "A senha deve conter ao menos um número"),
 });
 
+// ─── Cadastro ────────────────────────────────────────
 export const cadastroSchema = z
   .object({
     nome_completo: z.string().min(3, "O nome deve ter no mínimo 3 caracteres"),
@@ -24,6 +30,27 @@ export const cadastroSchema = z
     path: ["confirmar_senha"],
   });
 
+// ─── Reset de senha ──────────────────────────────────
+export const resetSchema = z.object({
+  email: z.string().email("Insira um e-mail válido"),
+});
+
+// ─── Strength calculator ─────────────────────────────
+export function calcPasswordStrength(senha) {
+  if (!senha) return { label: "", level: 0, color: "bg-muted" };
+  let score = 0;
+  if (senha.length >= 6) score += 1;
+  if (senha.length >= 10) score += 1;
+  if (/[A-Z]/.test(senha)) score += 1;
+  if (/[0-9]/.test(senha)) score += 1;
+  if (/[^a-zA-Z0-9]/.test(senha)) score += 1;
+
+  if (score <= 2) return { label: "Fraca", level: 1, color: "bg-destructive" };
+  if (score <= 3) return { label: "Média", level: 2, color: "bg-amber-400" };
+  return { label: "Forte", level: 3, color: "bg-primary" };
+}
+
+// ─── Schemas de dados (mantidos) ─────────────────────
 export const pacienteSchema = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
   cpf: z.string().optional(),
@@ -47,9 +74,7 @@ export const consultaSchema = z.object({
   profissional_id: z.string().uuid("Selecione um profissional"),
   data_hora: z.string().min(1, "Data e hora obrigatórias"),
   tipo: z.enum(["Primeira Consulta", "Retorno", "Avaliação", "Exame"]),
-  status: z
-    .enum(["Agendada", "Confirmada", "Em Andamento", "Concluída", "Cancelada"])
-    .default("Agendada"),
+  status: z.enum(["Agendada", "Confirmada", "Em Andamento", "Concluída", "Cancelada"]).default("Agendada"),
   observacao: z.string().optional(),
 });
 

@@ -14,6 +14,8 @@ import Anexos from "@/pages/Anexos";
 import PrescricaoDigital from "@/pages/PrescricaoDigital";
 import Evolucao from "@/pages/Evolucao";
 import Notas from "@/pages/Notas";
+import RecuperarSenha from "@/pages/RecuperarSenha";
+import PoliticaAcesso from "@/pages/PoliticaAcesso";
 import IA from "@/pages/IA";
 import Perfil from "@/pages/Perfil";
 import PortalPaciente from "@/pages/PortalPaciente";
@@ -28,6 +30,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
           <Route path="/cadastro" element={<PublicOnlyRoute><Cadastro /></PublicOnlyRoute>} />
+          <Route path="/recuperar-senha" element={<PublicOnlyRoute><RecuperarSenha /></PublicOnlyRoute>} />
+          <Route path="/politica-acesso" element={<PoliticaAcesso />} />
 
           {/* Rotas para Profissionais */}
           <Route path="/dashboard" element={<ProfissionalRoute><DashboardLayout><Dashboard /></DashboardLayout></ProfissionalRoute>} />

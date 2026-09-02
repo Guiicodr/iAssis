@@ -89,6 +89,18 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const resetPassword = async ({ email }) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/resetar-senha`,
+    });
+    if (error) throw new Error(error.message);
+  };
+
+  const updatePassword = async (senha) => {
+    const { error } = await supabase.auth.updateUser({ password: senha });
+    if (error) throw new Error(error.message);
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -111,6 +123,8 @@ export function AuthProvider({ children }) {
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
     updateProfile,
     user: session?.user ?? null,
   };
