@@ -41,3 +41,13 @@ src/
 ├── lib/            # Utilities (supabaseClient, validations, formatacao)
 └── pages/          # Pages (Login, Cadastro, Dashboard, CRUD, módulos clínicos)
 ```
+## 📱 Responsividade
+
+Interface totalmente responsiva utilizando **Tailwind CSS 4** + **shadcn/ui**:
+
+- **Sidebar**: menu retrátil com botão hamburger em telas menores (<768px)
+- **Dashboard**: grid adaptável (`sm:grid-cols-2 lg:grid-cols-4`)
+- **Login/Cadastro**: formulários centralizados e responsivos
+- **Tabelas e cards**: colapsam verticalmente em dispositivos móveis
+- **Overlay**: fundo semi-transparente ao abrir sidebar no mobile
+- **Tipografia**: escalonamento automático de fontes com classes `text-sm`, `text-lg`, etc.
